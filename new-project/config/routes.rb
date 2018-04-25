@@ -9,10 +9,15 @@ Rails.application.routes.draw do
   get    'login'   => 'sessions#new'     #вход в сессию, получаем дани
   post   'login'   => 'sessions#create'  #вход в нова
   delete 'logout'  => 'sessions#destroy' #удалить сессию
-  resources :users
+  resources :users do
+    member do
+      get :following, :followers
+    end
+  end
 
   resources :account_activations, only: [:edit]
 
   resources :microposts,          only: [:create, :destroy]
+  resources :relationships,       only: [:create, :destroy]
 
 end

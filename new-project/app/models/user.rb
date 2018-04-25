@@ -1,6 +1,15 @@
 class User < ApplicationRecord
 	has_many :microposts, dependent: :destroy 
 						 #удаление сообщений при удалении пользователей
+  	has_many :active_relationships,  class_name:  "Relationship", #подписки
+                                   	 foreign_key: "follower_id",
+                                     dependent:   :destroy
+  	has_many :passive_relationships, class_name:  "Relationship", #подпищики
+                                     foreign_key: "followed_id",
+                                     dependent:   :destroy
+
+    has_many :following, through: :active_relationships,  source: :followed
+    has_many :followers, through: :passive_relationships, source: :follower
 
 	attr_accessor :remember_token, :activation_token
 	#перед сохранением в бд, self(текущий пользователь) = email нижний решистр
@@ -49,17 +58,32 @@ class User < ApplicationRecord
     	Micropost.where("user_id = ?", id)
   	end
 
+	# Начать читать сообщения пользователя.
+	def follow(other_user)
+	  active_relationships.create(followed_id: other_user.id)
+	end
+
+	# Перестать читать сообщения пользователя.
+	def unfollow(other_user)
+	  active_relationships.find_by(followed_id: other_user.id).destroy
+	end
+
+	# Возвращает true, если текущий пользователь читает сообщения другого пользователя.
+	def following?(other_user)
+	  following.include?(other_user)
+	end
+
 
 	private
 
-	# Переводит адрес электронной почты в нижний регистр.
-    def downcase_email
-      self.email = email.downcase
-    end
+		# Переводит адрес электронной почты в нижний регистр.
+	    def downcase_email
+	      self.email = email.downcase
+	    end
 
-    # Создает и присваивает активационнй токен и дайджест.
-    def create_activation_digest
-      self.activation_token  = User.new_token
-      self.activation_digest = User.digest(activation_token)
-    end
+	    # Создает и присваивает активационнй токен и дайджест.
+	    def create_activation_digest
+	      self.activation_token  = User.new_token
+	      self.activation_digest = User.digest(activation_token)
+	    end
 end
