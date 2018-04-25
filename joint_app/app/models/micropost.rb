@@ -3,7 +3,7 @@ class Micropost < ApplicationRecord
   default_scope -> { order(created_at: :desc) } #меняет хронологию сообщений
   mount_uploader :picture, PictureUploader
   validates :user_id, presence: true
-  validates :content, presence: true, length: {maximum: 140}
+  validates :content, presence: true, length: {maximum: 300}
   validate  :picture_size
 
    private
